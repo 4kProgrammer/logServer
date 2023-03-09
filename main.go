@@ -68,7 +68,11 @@ func handleConnection(conn net.Conn, logFile *os.File) {
 		fmt.Println("Received data:", message)
 
 		// Write the received message to the log file
-		logFile.Println(message)
+		_, err = logFile.WriteString(message)
+		if err != nil {
+			fmt.Println("Error writing to log file:", err.Error())
+			return
+		}
 
 		// Send a response back to the client
 		response := "Hello, client!"
