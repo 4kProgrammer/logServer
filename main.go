@@ -19,7 +19,7 @@ func main() {
 	const (
 		HOST = "94.101.186.207"
 		PORT = "8080"
-		TYPE ="tcp"
+		TYPE = "tcp"
 	)
 
 	// Listen for incoming connections on port 8080
@@ -45,7 +45,7 @@ func main() {
 }
 
 func handleConnection(conn net.Conn, logFile *os.File) {
-	defer conn.Close()
+	//defer conn.Close()
 
 	// Read data from the connection
 	buffer := make([]byte, 1024)
