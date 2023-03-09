@@ -47,30 +47,32 @@ func main() {
 func handleConnection(conn net.Conn, logFile *os.File) {
 	//defer conn.Close()
 
-	// Read data from the connection
-	buffer := make([]byte, 1024)
-	_, err := conn.Read(buffer)
-	if err != nil {
-		fmt.Println("Error reading:", err.Error())
-		return
-	}
+	for {
+		// Read data from the connection
+		buffer := make([]byte, 1024)
+		_, err := conn.Read(buffer)
+		if err != nil {
+			fmt.Println("Error reading:", err.Error())
+			return
+		}
 
-	// Log the received data to the file
-	timestamp := time.Now().Format("2006-01-02 15:04:05")
-	logMsg := fmt.Sprintf("%s - Received data: %s\n", timestamp, string(buffer))
-	_, err = logFile.WriteString(logMsg)
-	if err != nil {
-		fmt.Println("Error writing to log file:", err.Error())
-		return
-	}
+		// Log the received data to the file
+		timestamp := time.Now().Format("2006-01-02 15:04:05")
+		logMsg := fmt.Sprintf("%s - Received data: %s\n", timestamp, string(buffer))
+		_, err = logFile.WriteString(logMsg)
+		if err != nil {
+			fmt.Println("Error writing to log file:", err.Error())
+			return
+		}
 
-	// Send a response back to the client
-	response := "Hello, client!"
-	_, err = conn.Write([]byte(response))
-	if err != nil {
-		fmt.Println("Error writing:", err.Error())
-		return
-	}
+		// Send a response back to the client
+		response := "Hello, client!"
+		_, err = conn.Write([]byte(response))
+		if err != nil {
+			fmt.Println("Error writing:", err.Error())
+			return
+		}
 
-	fmt.Println("Response sent")
+		fmt.Println("Response sent")
+	}
 }
