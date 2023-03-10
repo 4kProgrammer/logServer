@@ -1,12 +1,15 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"io"
 	"log"
 	"net"
 	"net/http"
 	"os"
+	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 const (
@@ -89,22 +92,35 @@ func handleConnection(conn net.Conn, logFile *os.File) {
 
 func handleLog(w http.ResponseWriter, r *http.Request) {
 	// Open the log file and write its contents to the HTTP response
+
+	// upgrade connection to websocket
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer conn.Close()
+
+	// open log file for reading
 	logFile, err := os.Open("messages.log")
 	if err != nil {
-		http.Error(w, "Error opening log file", http.StatusInternalServerError)
+		fmt.Println(err)
 		return
 	}
 	defer logFile.Close()
 
-	_, err = logFile.Seek(0, 0)
-	if err != nil {
-		http.Error(w, "Error seeking log file", http.StatusInternalServerError)
-		return
+	// read log file line by line and send each line to client
+	scanner := bufio.NewScanner(logFile)
+	for scanner.Scan() {
+		message := scanner.Text()
+		if err := conn.WriteMessage(websocket.TextMessage, []byte(message)); err != nil {
+			fmt.Println(err)
+			break
+		}
+		time.Sleep(time.Millisecond * 500) // wait half a second before sending next message
 	}
 
-	_, err = io.Copy(w, logFile)
-	if err != nil {
-		http.Error(w, "Error writing log to HTTP response", http.StatusInternalServerError)
-		return
+	if err := scanner.Err(); err != nil {
+		fmt.Println(err)
 	}
 }
